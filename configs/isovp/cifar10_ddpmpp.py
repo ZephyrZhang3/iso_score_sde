@@ -1,5 +1,6 @@
 # coding=utf-8
 # Copyright 2020 The Google Research Authors.
+# Copyright 2025 The GIVDS Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,9 @@
 # limitations under the License.
 
 # Lint as: python3
+
+
+
 """Training NCSNv3 on CIFAR-10 with continuous sigmas."""
 
 from configs.default_cifar10_configs import get_default_configs
