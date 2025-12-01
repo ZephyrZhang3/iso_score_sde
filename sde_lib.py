@@ -83,6 +83,8 @@ class SDE(abc.ABC):
         Returns:
           f, G
         """
+        x = x.float()
+        t = t.float()
         dt = 1 / self.N
         drift, diffusion = self.sde(x, t)
         f = drift * dt
@@ -182,6 +184,8 @@ class VPSDE(SDE):
 
     def discretize(self, x, t):
         """DDPM discretization."""
+        x = x.float()
+        t = t.float()
         timestep = (t * (self.N - 1) / self.T).long()
         beta = self.discrete_betas.to(x.device)[timestep]
         alpha = self.alphas.to(x.device)[timestep]
@@ -283,6 +287,8 @@ class VESDE(SDE):
 
     def discretize(self, x, t):
         """SMLD(NCSN) discretization."""
+        x = x.float()
+        t = t.float()
         timestep = (t * (self.N - 1) / self.T).long()
         sigma = self.discrete_sigmas.to(t.device)[timestep]
         adjacent_sigma = torch.where(
@@ -318,7 +324,7 @@ class isoVPSDE(VPSDE):
         super().__init__(beta_min=beta_min, beta_max=beta_max, N=N)
         self.N = N
 
-        self.schedule_fn = self._get_geometric_iso_velocity_schedule_fn(
+        self.schedule_fn = isoVPSDE._get_geometric_iso_velocity_schedule_fn(
             data_batch, grid_size, pair_distance_method, pair_distance_k
         )
 
@@ -397,6 +403,8 @@ class isoVPSDE(VPSDE):
 
     def discretize(self, x, t):
         """DDPM discretization."""
+        x = x.float()
+        t = t.float()
         timestep = (t * (self.N - 1) / self.T).long()
         beta = self.discrete_betas.to(x.device)[timestep]
         alpha = self.alphas.to(x.device)[timestep]
@@ -532,10 +540,10 @@ class isoVPSDE(VPSDE):
             alpha, sigma = torch.cos(theta), torch.sin(theta)
             X_t = alpha * X + sigma * noise
 
-            all_dists_sq = self._compute_pairwise_distances(
+            all_dists_sq = isoVPSDE._compute_pairwise_distances(
                 X_t,
-                method=pair_distance_method,
-                k=pair_distance_k,
+                method=pairwise_distance_method,
+                k=k,
             )
 
             mean_z, std_z = all_dists_sq.mean(), all_dists_sq.std()
@@ -566,6 +574,8 @@ class isoVPSDE(VPSDE):
         epsilon = 1e-6
         ramp = torch.linspace(0, epsilon, len(psi_monotonic), dtype=torch.float64)
         psi_strict = psi_monotonic + ramp
+        # unified to numpy
+        psi_strict = psi_strict.cpu().numpy()
 
         # 3. Create Interpolator
         # Maps Target Psi -> Required Theta

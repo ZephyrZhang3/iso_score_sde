@@ -120,6 +120,8 @@ def get_model_fn(model, train=False):
         Returns:
           A tuple of (model output, new mutable states)
         """
+        x = x.float()
+        labels = labels.float()
         if not train:
             model.eval()
             return model(x, labels)
